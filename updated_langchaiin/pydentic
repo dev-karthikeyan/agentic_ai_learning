@@ -1,0 +1,17 @@
+from dotenv import load_dotenv
+from pydantic import BaseModel, Field
+from langchain_mistralai import ChatMistralAI
+
+load_dotenv()
+
+model = ChatMistralAI(model="mistral-small-2603")
+
+class Movie(BaseModel):
+    title: str = Field(description="movie title")
+    rating: float = Field(description="rating of the movie")
+    cast: str = Field(description="actors in the movie")
+
+model_with_structure = model.with_structured_output(Movie)
+response = model_with_structure.invoke("tell me about jurassic park 1993")
+
+print(response)

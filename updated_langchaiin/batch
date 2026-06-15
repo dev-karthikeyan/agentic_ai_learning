@@ -1,0 +1,19 @@
+import os
+from dotenv import load_dotenv
+from langchain_mistralai import ChatMistralAI
+
+load_dotenv()
+
+model = ChatMistralAI(model = "mistral-small-2603")
+
+responses = model.batch([
+
+     "why do parrots talk",
+     "who is elon muks",
+     "karthikeyan from tamilnadu",] ,  
+
+     config={"max_concurrency": 5}
+)
+
+for response in responses :
+    print(response. content)

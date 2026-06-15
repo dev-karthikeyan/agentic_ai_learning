@@ -1,0 +1,10 @@
+import os
+from dotenv import load_dotenv
+from langchain_mistralai import ChatMistralAI
+
+load_dotenv()
+
+model = ChatMistralAI(model = "mistral-small-2603")
+
+for chunks in model.stream("whats elon daughter name") :
+    print(chunks.content, end = "|" , flush=True)
