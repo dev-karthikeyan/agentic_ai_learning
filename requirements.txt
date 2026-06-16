@@ -1,6 +1,3 @@
+langgraph
 langchain
-langchain_community
-langchain-groq
-langchain-google-genai
-python-dotenv
-langchain-mistralai
+langsmith

@@ -1,0 +1,46 @@
+from typing import Annotated
+from typing_extensions import TypedDict
+
+from dotenv import load_dotenv
+from langchain_groq import ChatGroq
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+
+load_dotenv()
+
+
+class State(TypedDict):
+    messages: Annotated[list, add_messages]
+
+
+model = ChatGroq(
+    model="openai/gpt-oss-120b"
+)
+
+
+def chatbot(state: State):
+    return {
+        "messages": [
+            model.invoke(state["messages"])
+        ]
+    }
+
+
+graph_builder = StateGraph(State)
+
+graph_builder.add_node("chatbot", chatbot)
+
+graph_builder.add_edge(START, "chatbot")
+graph_builder.add_edge("chatbot", END)
+
+graph = graph_builder.compile()
+
+response = graph.invoke(
+    {
+        "messages": [
+            ("user", "hi yarr")
+        ]
+    }
+)
+
+print(response)
