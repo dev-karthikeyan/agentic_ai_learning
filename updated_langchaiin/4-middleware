@@ -1,0 +1,20 @@
+from langchain.agents import create_agent
+from langchain_core.messages import HumanMessage,SystemMessage
+from langchain.agents.middleware iimport SummarizationMiddleware
+from langchain.checkpoint import inMemorySaver
+
+agent = create_agent(
+
+    model = "mistral-small-2603",
+    checkpointer  = inMemorySaver(),
+
+    middleware = [
+        
+        SummarizationMiddleware(
+
+            model = "mistral-small-2603",
+            trigger  = ("message",10),
+            keep = ("message",4)          
+)]
+
+)
