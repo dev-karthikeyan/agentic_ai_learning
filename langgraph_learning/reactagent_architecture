@@ -8,26 +8,32 @@ from langgraph.prebuilt import tools_condition
 from typing import TypedDict
 from langgraph.graph import add_messages
 from langchain_core.messages import HumanMessage
+from langchain_core.tools import tool
 
 load_dotenv()
 
 class State (TypedDict) :
     messages: Annotated[list,add_messages]
 
-model = ChatGroq(model = "llama-3.1-8b-instant")
+model = ChatGroq(model = "openai/gpt-oss-120b")
 
 search_tool = TavilySearch(max_results = 1)
 
-llm_with_tools = model.bind_tools([search_tool])
-
 def model_with_tools(state : State) :
     """find the recent news"""
-    return {"messages" : llm_with_tools.invoke(state["messages"])}
+    return {"messages" : [ llm_with_tools.invoke(state["messages"])]} 
+
+@tool
+def multi_tool(a : int , b : int ) -> int :
+    """ multiple the number and give the answer """ 
+    return   a*b
+
+llm_with_tools = model.bind_tools([search_tool,multi_tool])
 
 graph_builder = StateGraph(State)
 
 graph_builder.add_node("llm_with_tools",model_with_tools)
-graph_builder.add_node("tools",ToolNode([search_tool]))
+graph_builder.add_node("tools",ToolNode([search_tool,multi_tool]))
 
 graph_builder.add_edge(START,"llm_with_tools")
 graph_builder.add_conditional_edges(
