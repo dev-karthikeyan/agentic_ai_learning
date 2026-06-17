@@ -1,0 +1,53 @@
+from typing import Annotated
+from pydantic._internal._typing_extra import is_annotated
+from dotenv import load_dotenv
+from langchain_groq import ChatGroq
+from langchain_tavily import TavilySearch
+from langgraph.graph import StateGraph,START,END
+from langgraph.prebuilt import ToolNode
+from langgraph.prebuilt import tools_condition
+from typing import TypedDict
+from langgraph.graph import add_messages
+from langchain_core.messages import HumanMessage
+
+load_dotenv()
+
+class State (TypedDict) :
+    messages: Annotated[list,add_messages]
+
+model = ChatGroq(model = "llama-3.1-8b-instant")
+
+search_tool = TavilySearch(max_results = 1)
+
+llm_with_tools = model.bind_tools([search_tool])
+
+def model_with_tools(state : State) :
+    """find the recent news"""
+    return {"messages" : llm_with_tools.invoke(state["messages"])}
+
+graph_builder = StateGraph(State)
+
+graph_builder.add_node("llm_with_tools",model_with_tools)
+graph_builder.add_node("tools",ToolNode([search_tool]))
+
+graph_builder.add_edge(START,"llm_with_tools")
+graph_builder.add_conditional_edges(
+    "llm_with_tools",
+     tools_condition
+)
+graph_builder.add_edge("tools","llm_with_tools")
+graph = graph_builder.compile()
+
+while True :
+    user_input = input("want to know today news :")
+
+    if user_input.lower() == "exit" :
+        break
+    
+    Response = graph.invoke({
+
+        "messages" : [HumanMessage(content = user_input)]
+
+    })
+
+    print(Response["messages"][-1].content)
