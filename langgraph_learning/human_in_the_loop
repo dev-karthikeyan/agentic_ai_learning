@@ -1,0 +1,64 @@
+from langgraph import checkpoint
+from typing import Annotated
+from dotenv import load_dotenv
+from langchain_groq import ChatGroq
+from langchain_tavily import TavilySearch
+from langgraph.graph import StateGraph,START,END
+from langgraph.prebuilt import ToolNode
+from langgraph.prebuilt import tools_condition
+from typing import TypedDict
+from langgraph.graph import add_messages
+from langchain_core.messages import HumanMessage
+from langchain_core.tools import tool
+from langgraph.types import Command,interrupt
+from langgraph.checkpoint.memory import MemorySaver
+
+load_dotenv()
+
+class State (TypedDict) :
+    messages: Annotated[list,add_messages]
+
+model = ChatGroq(model = "openai/gpt-oss-120b")
+
+search_tool = TavilySearch(max_results = 1)
+
+memory = MemorySaver()
+
+@tool
+def human_assistance(query : str ) -> str :
+    """request assistance from human"""
+    human_response = interrupt{"query" : query}
+    return human_response["data"]
+
+tools = [search_tool,human_assistance]
+
+model_with_tools=model.bind_tools(tools)
+
+config = {"configureable" : {"config" : "1"}}
+
+def chat_bot (State : state) :
+    messages = model_with_tools.invoke(state["messages"])
+    return messages["messages"]
+
+graph_builder = StateGraph(State)
+
+graph_builder.add_node("chat_bot",chat_bot)
+graph_builder.add_node("tools",ToolNode(tools))
+
+graph_builder.add_edge(START,"chat_bot")
+graph_builder.add_conditional_edges(
+    "chat_bot",
+    tools_condition
+)
+graph_builder.add_edge("tools","chat_bot")
+
+graph = graph_builder.compile(checkpoint=memory)
+
+response = graph.invoke("hey whats todays news in gen ai" , config = config)
+
+print(response["messages"][-1].content)
+
+
+
+
+

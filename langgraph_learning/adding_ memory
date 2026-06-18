@@ -62,4 +62,6 @@ while True :
         )
     
     for event in Response :
-        print(event)
+        for node_output in event.values():
+            if  "messages" in node_output :
+                print(node_output["messages"][-1].content)
