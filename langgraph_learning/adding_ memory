@@ -9,6 +9,7 @@ from typing import TypedDict
 from langgraph.graph import add_messages
 from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
+from langgraph.checkpoint.memory import MemorySaver
 
 load_dotenv()
 
@@ -16,6 +17,8 @@ class State (TypedDict) :
     messages: Annotated[list,add_messages]
 
 model = ChatGroq(model = "openai/gpt-oss-120b")
+
+memory = MemorySaver()
 
 search_tool = TavilySearch(max_results = 1)
 
@@ -41,20 +44,22 @@ graph_builder.add_conditional_edges(
      tools_condition
 )
 graph_builder.add_edge("tools","llm_with_tools")
-graph = graph_builder.compile()
+graph = graph_builder.compile(checkpointer=memory)
 
 while True :
     user_input = input("want to know today news :")
 
     if user_input.lower() == "exit" :
         break
-    
+
+    config = {"configurable" : {"thread_id" : "1"}}
+
     Response = graph.stream({
 
-        "messages" : [HumanMessage(content = user_input)]
-
-    })
-
-    for event in Response: 
-        for value in event.values():
-            print(value["messages"][-1].content)        
+        "messages" : [HumanMessage(content = user_input)]}
+        ,config = config
+        
+        )
+    
+    for event in Response :
+        print(event)
