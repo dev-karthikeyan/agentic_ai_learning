@@ -3,12 +3,11 @@ from typing import Annotated
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
 from langchain_tavily import TavilySearch
-from langgraph.graph import StateGraph,START,END
+from langgraph.graph import StateGraph,START
 from langgraph.prebuilt import ToolNode
 from langgraph.prebuilt import tools_condition
 from typing import TypedDict
 from langgraph.graph import add_messages
-from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from langgraph.types import Command,interrupt
 from langgraph.checkpoint.memory import MemorySaver
@@ -56,7 +55,7 @@ graph = graph_builder.compile(checkpoint=memory)
 
 response = graph.invoke("hey whats todays news in gen ai" , config = config)
 
-print(response["messages"][-1].content)
+print(response["messages"][-1].content)       
 
 
 
