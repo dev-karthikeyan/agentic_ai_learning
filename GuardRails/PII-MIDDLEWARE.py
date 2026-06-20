@@ -1,0 +1,48 @@
+from dotenv import load_dotenv
+from langchain_groq import ChatGroq
+from langchain.agents.middleware import PiiExtractionMiddleware
+from langchain.agents import create_agent
+from langchain_core.tools import tool 
+
+load_dotenv()
+
+model = ChatGroq(model = "openai/gpt-oss-120b")
+
+
+@tool
+def customer_lookup(query : str ) -> str :
+    """lookup for the customer information"""
+    return f"customer record found for query {query}"
+
+
+agent = create_agent(
+
+     model = model ,
+     tools = [customer_lookup] ,
+     middleware = [
+        PiiExtractionMiddleware(
+          
+             "email" ,
+             strategy = "redact" ,
+             apply_to_input = True , 
+    ),
+        PiiExtractionMiddleware(
+
+             credit_card , 
+             strategy = "mask" ,
+             apply_to_input = True , 
+
+    ),
+        PiiExtractionMiddleware(
+
+              
+
+
+        )
+
+
+
+     ]
+
+)
+
