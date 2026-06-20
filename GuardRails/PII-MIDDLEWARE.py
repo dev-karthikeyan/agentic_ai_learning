@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from langchain_groq import ChatGroq
-from langchain.agents.middleware import PiiExtractionMiddleware
+from langchain.agents.middleware import PIIMiddleware
 from langchain.agents import create_agent
 from langchain_core.tools import tool 
 
@@ -20,29 +20,39 @@ agent = create_agent(
      model = model ,
      tools = [customer_lookup] ,
      middleware = [
-        PiiExtractionMiddleware(
+        PIIMiddleware(
           
              "email" ,
              strategy = "redact" ,
              apply_to_input = True , 
     ),
-        PiiExtractionMiddleware(
+        PIIMiddleware(
 
-             credit_card , 
+             "credit_card" , 
              strategy = "mask" ,
              apply_to_input = True , 
 
     ),
-        PiiExtractionMiddleware(
+        PIIMiddleware(
+            "api_key" ,
+            detector=r"sk-[a-zA-Z0-9]{32}" ,
+            strategy = "block" ,
+            apply_to_input = True ,
 
-              
-
-
-        )
-
-
-
-     ]
-
+    )
+]
 )
 
+result = agent.invoke ({
+    
+    "messages" : [{
+        "role" : "user" ,
+        "content" : "hey karthiaathi@gmail.com and 4111 1111 1111 1111 this is my account number"
+    }]
+    })
+
+print("------printing------")
+print(result["messages"][-1].content)
+
+for msg in result["messages"]:
+    print(msg)
