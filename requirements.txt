@@ -2,3 +2,5 @@ langgraph
 langchain
 langsmith
 langchain_tavily
+deepagents
+tavily-python
