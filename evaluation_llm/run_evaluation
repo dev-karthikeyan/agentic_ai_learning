@@ -1,0 +1,23 @@
+import groq
+from langsmith import wrappers
+
+groq_client = wrappers.wrap_groq(groq.Groq())
+
+eval_instruction = "You are an expert professor specialized in grading students' answers to questions" 
+
+def correctness(input : dict , output : dict , Reference_output : dict) -> bool :
+    user_content = f"""you are grading the following qustion :
+          {input['question']} 
+          here is the real answer :
+          {Reference_output['answer']} 
+          your are grading the following predicted answer :
+          {output['response']}
+          response with CORRECT or INCORRECT :
+          grade :
+          """ 
+    response = groq_client.chat.completions.create(
+
+
+
+        
+    )

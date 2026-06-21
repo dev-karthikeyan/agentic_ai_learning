@@ -1,0 +1,38 @@
+from urllib3 import response
+from pandas import BooleanDtype
+import os 
+from langsmith.schemas import ExampleBase
+from langsmith.schemas import Dataset
+from dotenv import load_dotenv
+from langsmith import Client
+from langchain_groq import ChatGroq
+
+os.environ["LANGSMITH_TRACING"]="true"
+
+load_dotenv()
+
+client = Client()
+
+dataset_name = "chat bot evaluation v6"
+dataset = client.create_dataset(dataset_name)
+
+client.create_examples(
+
+      dataset_id=dataset.id,
+      examples = [
+    {
+        "inputs": {"question": "Hi"},
+        "outputs": {"answer": "Hello! How can I help you?"}
+    },
+    {
+        "inputs": {"question": "What is 2+2?"},
+        "outputs": {"answer": "4"}
+    },
+    {
+        "inputs": {"question": "Who created Python?"},
+        "outputs": {"answer": "Guido van Rossum"}
+    }
+      ] 
+)
+
+
