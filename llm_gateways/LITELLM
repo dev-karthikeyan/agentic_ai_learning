@@ -1,0 +1,44 @@
+import os 
+import litellm
+import warnings
+import logging
+import litellm
+from litellm import completion
+from dotenv import load_dotenv
+
+load_dotenv()
+
+warnings.filterwarnings("ignore")
+logging.getLogger("litellm").setLevel(logging.ERROR)
+
+litellm.suppress_debug_info = True
+
+print("mistral key loaded:", "✅" if os.getenv("MISTRAL_API_KEY") else "❌")
+print("groq key loaded:", "✅" if os.getenv("GROQ_API_KEY") else "❌")
+print("google key loaded:", "✅" if os.getenv("GOOGLE_API_KEY") else "❌")
+
+
+mistral_response = completion(
+
+    model = "mistral-small-2603" ,
+    message = [{"role" : "user" , "content" : "whats deepagents"}]
+    print("MISTRAL_RESPONSE" : mistral_response["choices"][0]["message"]["content"])
+
+),
+
+groq_response = completion(
+
+    model = "openai/gpt-oss-120b" ,
+    message = [{"role" : "user" , "content" : "whats deepagents"}]
+    print("OPENAI_RESPONSE" : groq_response["choices"][0]["message"]["content"])
+
+),
+
+google_response = completion(
+
+    model = "Gemini 2.0 Flash-Lite" ,
+    message = [{"role" : "user" , "content" : "whats deepagents"}]
+    print("GOOGLE_RESPONSE" : google_response["choices"][0]["message"]["content"])
+
+)  
+

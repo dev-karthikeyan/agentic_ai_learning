@@ -5,3 +5,4 @@ langchain_tavily
 deepagents
 tavily-python
 langchain-huggingface
+litellm
