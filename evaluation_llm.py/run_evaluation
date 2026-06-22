@@ -1,0 +1,52 @@
+import groq
+from langsmith import wrappers
+
+groq_client = wrappers.wrap_groq(groq.Groq())
+
+eval_instruction = "You are an expert professor specialized in grading students' answers to questions" 
+
+def correctness(input : dict , output : dict , Reference_output : dict) -> bool :
+    user_content = f"""you are grading the following qustion :
+          {input['question']} 
+          here is the real answer :
+          {Reference_output['answer']} 
+          your are grading the following predicted answer :
+          {output['response']}
+          response with CORRECT or INCORRECT :
+          grade :
+          """
+
+      response = groq_client.chat.completions.create(
+          model="openai/gpt-oss-120b",
+          temperature=0,
+          messages=[
+          {"role": "system", "content": eval_instruction},
+          {"role": "user", "content": user_content}
+    ]
+)        .choices[0].message.content
+         return response == "CORRECT"      
+
+def concision(outputs: dict, reference_outputs: dict) -> bool:
+    return int(len(outputs["response"]) < 2 * len(reference_outputs["answer"]))         
+
+default_instructions = "Respond to the users question in a short, concise manner (one short sentence)."
+
+def my_app(question: str, model: str = "openai/gpt-oss-120b", instructions: str = default_instructions) -> str:
+    return groq_client.chat.completions.create(
+        model=model,
+        temperature=0,
+        messages=[
+            {"role": "system", "content": instructions},
+            {"role": "user", "content": question},
+        ]
+    ).choices[0].message.content
+
+def ls_target(inputs: str) -> dict:
+    return {"response": my_app(inputs)}
+
+experiment_results = client.evals.run(
+    target=ls_target,
+    data=dataset_name,
+    evaluators=[correctness, concision],
+    experiment_prefix="openai/gpt-oss-120b-chatbot"
+)
